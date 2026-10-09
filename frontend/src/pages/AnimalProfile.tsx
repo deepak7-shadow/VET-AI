@@ -28,6 +28,7 @@ import {
   CartesianGrid 
 } from 'recharts';
 import { api } from '../services/api';
+import { ExcretaScreeningModal } from '../components/ExcretaScreeningModal';
 
 interface AnimalProfileProps {
   animalId: string;
@@ -44,6 +45,8 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({
   const [history, setHistory] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [downloadingReportId, setDownloadingReportId] = useState<string | null>(null);
+  const [isExcretaModalOpen, setIsExcretaModalOpen] = useState(false);
+
 
   const fetchHistory = async () => {
     try {
@@ -100,7 +103,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
       {/* Top back navigation & quick analyze */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <button 
           onClick={onBack}
           className="inline-flex items-center gap-2 text-xs font-semibold text-[#667085] hover:text-[#172033] bg-white border border-[#E5EAF0] px-3.5 py-2 rounded-xl transition-colors shadow-xs"
@@ -109,14 +112,28 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({
           <span>Back to Livestock Directory</span>
         </button>
 
-        <button
-          onClick={() => onAnalyzeAnimal(animal.animal_id)}
-          className="px-4 py-2 bg-[#16845B] hover:bg-[#126b49] text-white text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors shadow-xs"
-        >
-          <Sparkles className="w-4 h-4" />
-          <span>Run AI Health Assessment</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsExcretaModalOpen(true)}
+            className="px-3.5 py-2 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors shadow-xs"
+          >
+            <span className="text-sm">💩</span>
+            <span>Screen Manure / Urine</span>
+            <span className="bg-amber-200 text-amber-950 text-[10px] font-bold px-1.5 py-0.5 rounded-md">
+              YOLO26
+            </span>
+          </button>
+
+          <button
+            onClick={() => onAnalyzeAnimal(animal.animal_id)}
+            className="px-4 py-2 bg-[#16845B] hover:bg-[#126b49] text-white text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors shadow-xs"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Run AI Health Assessment</span>
+          </button>
+        </div>
       </div>
+
 
       {/* Hero Overview Card */}
       <div className="bg-white border border-[#E5EAF0] rounded-2xl p-6 shadow-xs grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
@@ -344,6 +361,17 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({
           )}
         </div>
       </div>
+
+      {/* Field Manure & Urine Screening Modal */}
+      <ExcretaScreeningModal
+        isOpen={isExcretaModalOpen}
+        onClose={() => setIsExcretaModalOpen(false)}
+        preselectedAnimalId={animal.animal_id}
+        onAnalysisSuccess={() => {
+          fetchHistory();
+        }}
+      />
     </div>
   );
 };
+

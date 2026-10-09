@@ -28,6 +28,7 @@ import {
 import { api } from '../services/api';
 import { DashboardData } from '../types';
 import { useAuth } from '../context/AuthContext';
+import { ExcretaScreeningModal } from '../components/ExcretaScreeningModal';
 
 interface DashboardProps {
   onNavigateToAnimal: (id: string) => void;
@@ -48,6 +49,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isExcretaModalOpen, setIsExcretaModalOpen] = useState(false);
+
 
   const fetchDashboard = async () => {
     try {
@@ -133,7 +136,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-3 shrink-0 flex-wrap">
+          <button
+            onClick={() => setIsExcretaModalOpen(true)}
+            className="px-3.5 py-2 bg-amber-50 hover:bg-amber-100/80 border border-amber-200 text-amber-900 text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors shadow-xs"
+          >
+            <span className="text-sm">💩</span>
+            <span>Screen Manure / Urine</span>
+            <span className="bg-amber-200 text-amber-950 text-[10px] font-bold px-1.5 py-0.5 rounded-md">
+              YOLO26
+            </span>
+          </button>
+
           {onOpenAddAnimal && (
             <button
               onClick={onOpenAddAnimal}
@@ -153,6 +167,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </button>
         </div>
       </div>
+
 
       {/* 2. Key Metrics Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-4">
@@ -223,8 +238,41 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
       </div>
 
+      {/* Field Manure & Urine Visual Disease Check (YOLO26 Prototype Feature) */}
+      <div className="bg-linear-to-r from-amber-50/70 via-emerald-50/40 to-white border border-[#E5EAF0] rounded-2xl p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-start sm:items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-white border border-amber-200 shadow-xs flex items-center justify-center text-2xl shrink-0">
+            💩
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="font-bold text-sm text-[#172033]">
+                Field Manure & Urine Health Check (Visual Disease Risk Screening)
+              </h3>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#16845B] text-white">
+                Multi-Agent YOLO26
+              </span>
+            </div>
+            <p className="text-xs text-[#667085] mt-1 max-w-2xl">
+              Capture or upload a field photo of animal manure or urine. The multi-agent pipeline screens for Coccidiosis, Salmonellosis, BVD, Leptospirosis, and UTI/Kidney infection, immediately updating the herd risk index and alert registry.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0 w-full md:w-auto">
+          <button
+            onClick={() => setIsExcretaModalOpen(true)}
+            className="w-full md:w-auto px-4 py-2.5 bg-[#16845B] hover:bg-[#126b49] text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors shadow-xs"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Screen Sample Photo</span>
+          </button>
+        </div>
+      </div>
+
       {/* 3. Charts & Analytics Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
         {/* Herd Temperature & Feeding Trends */}
         <div className="lg:col-span-2 bg-white border border-[#E5EAF0] rounded-2xl p-5 shadow-xs">
           <div className="flex items-center justify-between mb-4">
@@ -437,6 +485,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Field Manure & Urine Screening Modal */}
+      <ExcretaScreeningModal
+        isOpen={isExcretaModalOpen}
+        onClose={() => setIsExcretaModalOpen(false)}
+        onNavigateToAnimal={onNavigateToAnimal}
+        onAnalysisSuccess={() => {
+          fetchDashboard();
+        }}
+      />
     </div>
   );
 };
+

@@ -170,7 +170,46 @@ class RiskService:
             })
             raw_score += 8.0
 
+        # 5. Dedicated Manure & Urine Visual Excreta factor (YOLO26 Screening)
+        excreta = vision_data.get("excreta_screening")
+        if excreta:
+            excreta_score = float(excreta.get("disease_risk_score", 0.0))
+            top_indication = excreta.get("top_indication", "Unknown")
+            top_prob = float(excreta.get("top_probability", 0.0))
+            risk_tier = excreta.get("risk_tier", "LOW RISK")
+            sample_name = (excreta.get("sample_type") or "sample").replace("_", " ")
+
+            if risk_tier in ("CRITICAL CONCERN", "HIGH RISK") or excreta_score >= 65.0:
+                excreta_weight = 25.0 if excreta_score >= 80.0 else 20.0
+                factors.append({
+                    "name": f"YOLO26 Excreta Risk: {top_indication}",
+                    "weight": f"+{int(excreta_weight)}",
+                    "numeric_weight": excreta_weight,
+                    "detail": f"Visual {sample_name} screening indicates potential risk of {top_indication} ({top_prob:.1f}%). Confirmatory lab tests indicated.",
+                    "evidence_type": "EXCRETA_SCREENING_YOLO26"
+                })
+                raw_score += excreta_weight
+            elif risk_tier == "MEDIUM RISK" or excreta_score >= 35.0:
+                excreta_weight = 12.0
+                factors.append({
+                    "name": f"YOLO26 Visual Abnormality: {top_indication}",
+                    "weight": f"+{int(excreta_weight)}",
+                    "numeric_weight": excreta_weight,
+                    "detail": f"Visual {sample_name} flagged atypical appearance consistent with {top_indication} ({top_prob:.1f}%).",
+                    "evidence_type": "EXCRETA_SCREENING_YOLO26"
+                })
+                raw_score += excreta_weight
+            else:
+                factors.append({
+                    "name": "Normal Excreta Profile",
+                    "weight": "+0",
+                    "numeric_weight": 0.0,
+                    "detail": f"Visual {sample_name} appearance is within healthy normative range ({top_prob:.1f}%).",
+                    "evidence_type": "EXCRETA_SCREENING_YOLO26"
+                })
+
         final_score = min(100.0, max(0.0, round(raw_score, 1)))
+
 
         # Categorization logic compliant with Section 5
         # Must explicitly distinguish missing information from true low risk!

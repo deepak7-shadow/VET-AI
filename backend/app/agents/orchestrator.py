@@ -23,12 +23,13 @@ class OrchestratorAgent:
         feeding_percentage: float = 100.0,
         activity_percentage: float = 100.0,
         behavior_notes: str = "",
-        image_url: Optional[str] = None
+        image_url: Optional[str] = None,
+        sample_type: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Coordinates the multi-agent workflow:
         1. Orchestrator initializes
-        2. Dispatches Vision Agent, Behavior Agent, Sensor Agent
+        2. Dispatches Vision Agent (with YOLO26 screening if manure/urine), Behavior Agent, Sensor Agent
         3. Dispatches Risk Agent
         4. Dispatches Knowledge Agent (RAG)
         5. Dispatches Report Agent (Generative AI)
@@ -62,12 +63,13 @@ class OrchestratorAgent:
             behavior_notes=behavior_notes
         )
 
-        # 4. Run Vision Agent (analyzes image, saves to image_analysis)
+        # 4. Run Vision Agent (analyzes image, runs YOLO26 if manure/urine, saves to image_analysis)
         vision_data = await VisionAgent.run(
             animal=animal,
             image_url=image_url,
             temperature=temperature,
-            behavior_notes=behavior_notes
+            behavior_notes=behavior_notes,
+            sample_type=sample_type
         )
 
         # 5. Run Risk Agent (synthesizes multi-modal inputs, updates animal risk in Supabase)

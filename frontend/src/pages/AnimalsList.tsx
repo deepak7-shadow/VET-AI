@@ -18,6 +18,7 @@ import { api } from '../services/api';
 import { Animal } from '../types';
 import { AddAnimalModal } from '../components/animals/AddAnimalModal';
 import { BulkAnimalModal } from '../components/animals/BulkAnimalModal';
+import { ExcretaScreeningModal } from '../components/ExcretaScreeningModal';
 
 interface AnimalsListProps {
   onSelectAnimal: (id: string) => void;
@@ -32,6 +33,9 @@ export const AnimalsList: React.FC<AnimalsListProps> = ({ onSelectAnimal, onAnal
   const [selectedStatus, setSelectedStatus] = useState('ALL');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
+  const [isExcretaModalOpen, setIsExcretaModalOpen] = useState(false);
+  const [selectedExcretaAnimalId, setSelectedExcretaAnimalId] = useState<string | undefined>(undefined);
+
 
   const fetchAnimals = async () => {
     try {
@@ -113,6 +117,20 @@ export const AnimalsList: React.FC<AnimalsListProps> = ({ onSelectAnimal, onAnal
 
         <div className="flex flex-wrap items-center gap-2.5 self-start md:self-auto">
           <button
+            onClick={() => {
+              setSelectedExcretaAnimalId(undefined);
+              setIsExcretaModalOpen(true);
+            }}
+            className="px-3.5 py-2 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors shadow-xs"
+          >
+            <span className="text-sm">💩</span>
+            <span>Screen Manure / Urine</span>
+            <span className="bg-amber-200 text-amber-950 text-[10px] font-bold px-1.5 py-0.5 rounded-md">
+              YOLO26
+            </span>
+          </button>
+
+          <button
             onClick={() => setIsBulkModalOpen(true)}
             className="px-4 py-2 border border-emerald-600/40 text-emerald-700 bg-emerald-50/60 hover:bg-emerald-100 text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors shadow-xs"
           >
@@ -129,6 +147,7 @@ export const AnimalsList: React.FC<AnimalsListProps> = ({ onSelectAnimal, onAnal
           </button>
         </div>
       </div>
+
 
       {/* Filter and Search Bar */}
       <div className="bg-white border border-[#E5EAF0] rounded-2xl p-4 shadow-xs flex flex-wrap items-center gap-3">
@@ -255,21 +274,32 @@ export const AnimalsList: React.FC<AnimalsListProps> = ({ onSelectAnimal, onAnal
               </div>
 
               {/* Bottom Actions */}
-              <div className="p-4 pt-0 grid grid-cols-2 gap-2 border-t border-[#E5EAF0] mt-2">
+              <div className="p-3 pt-0 grid grid-cols-3 gap-1.5 border-t border-[#E5EAF0] mt-2">
                 <button
                   onClick={() => onSelectAnimal(animal.animal_id)}
-                  className="w-full py-2 px-3 bg-[#F7F9FC] hover:bg-slate-100 border border-[#E5EAF0] text-[#172033] text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-colors"
+                  className="py-2 px-1.5 bg-[#F7F9FC] hover:bg-slate-100 border border-[#E5EAF0] text-[#172033] text-[11px] font-semibold rounded-xl flex items-center justify-center gap-1 transition-colors"
                 >
                   <Eye className="w-3.5 h-3.5 text-slate-500" />
                   <span>Profile</span>
                 </button>
 
                 <button
+                  onClick={() => {
+                    setSelectedExcretaAnimalId(animal.animal_id);
+                    setIsExcretaModalOpen(true);
+                  }}
+                  className="py-2 px-1.5 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 text-[11px] font-semibold rounded-xl flex items-center justify-center gap-1 transition-colors shadow-xs"
+                >
+                  <span>💩</span>
+                  <span>Screen</span>
+                </button>
+
+                <button
                   onClick={() => onAnalyzeAnimal(animal.animal_id)}
-                  className="w-full py-2 px-3 bg-[#16845B] hover:bg-[#126b49] text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+                  className="py-2 px-1.5 bg-[#16845B] hover:bg-[#126b49] text-white text-[11px] font-semibold rounded-xl flex items-center justify-center gap-1 transition-colors shadow-xs"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>AI Analyze</span>
+                  <span>Analyze</span>
                 </button>
               </div>
             </div>
@@ -294,6 +324,18 @@ export const AnimalsList: React.FC<AnimalsListProps> = ({ onSelectAnimal, onAnal
           setAnimals(prev => [...newAnimals, ...prev]);
         }}
       />
+
+      {/* Excreta Screening Modal */}
+      <ExcretaScreeningModal
+        isOpen={isExcretaModalOpen}
+        onClose={() => setIsExcretaModalOpen(false)}
+        preselectedAnimalId={selectedExcretaAnimalId}
+        onNavigateToAnimal={onSelectAnimal}
+        onAnalysisSuccess={() => {
+          fetchAnimals();
+        }}
+      />
     </div>
   );
 };
+

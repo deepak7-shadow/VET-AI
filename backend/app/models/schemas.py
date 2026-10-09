@@ -50,10 +50,21 @@ class FullAnalysisRequest(BaseModel):
     activity_percentage: Optional[float] = 100.0
     behavior_notes: Optional[str] = "Animal standing calmly"
     image_url: Optional[str] = None
+    sample_type: Optional[str] = None # e.g. 'manure_closeup', 'urine_sample', 'body'
+    excreta_image_url: Optional[str] = None
+
+class ExcretaScreeningRequest(BaseModel):
+    animal_id: str
+    image_url: str
+    sample_type: Optional[str] = "manure_closeup" # 'manure_closeup' or 'urine_sample'
+    behavior_notes: Optional[str] = ""
+    temperature: Optional[float] = None
 
 class VisionAnalysisRequest(BaseModel):
     animal_id: str
     image_url: Optional[str] = None
+    sample_type: Optional[str] = None
+
 
 class BehaviorAnalysisRequest(BaseModel):
     animal_id: str

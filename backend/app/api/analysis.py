@@ -21,7 +21,7 @@ router = APIRouter(tags=["analysis"])
 async def run_full_agent_analysis(req: FullAnalysisRequest):
     """
     Coordinates the complete multi-agent workflow:
-    Orchestrator -> Vision, Behavior, Sensor -> Risk -> Knowledge (RAG) -> Report (GenAI) -> Alert.
+    Orchestrator -> Vision (YOLO26), Behavior, Sensor -> Risk -> Knowledge (RAG) -> Report (GenAI) -> Alert.
     """
     try:
         result = await OrchestratorAgent.run_full_analysis(
@@ -30,13 +30,46 @@ async def run_full_agent_analysis(req: FullAnalysisRequest):
             feeding_percentage=req.feeding_percentage or 100.0,
             activity_percentage=req.activity_percentage or 100.0,
             behavior_notes=req.behavior_notes or "",
-            image_url=req.image_url
+            image_url=req.excreta_image_url or req.image_url,
+            sample_type=req.sample_type
         )
         return result
     except ValueError as ve:
         raise HTTPException(status_code=404, detail=str(ve))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+from app.models.schemas import ExcretaScreeningRequest
+
+@router.post("/analyze/excreta-agent")
+async def analyze_excreta_agent(req: ExcretaScreeningRequest):
+    """
+    Direct farmer submission endpoint for manure or urine visual disease screening.
+    Runs complete multi-agent pipeline incorporating YOLO26 disease classification.
+    """
+    try:
+        animal = db.get_animal(req.animal_id)
+        if not animal:
+            raise HTTPException(status_code=404, detail=f"Animal {req.animal_id} not found")
+        
+        temp = req.temperature if req.temperature is not None else 38.5
+        notes = req.behavior_notes or f"Farmer submitted {req.sample_type.replace('_', ' ')} for visual disease screening"
+
+        result = await OrchestratorAgent.run_full_analysis(
+            animal_id_or_uuid=req.animal_id,
+            temperature=temp,
+            feeding_percentage=100.0,
+            activity_percentage=100.0,
+            behavior_notes=notes,
+            image_url=req.image_url,
+            sample_type=req.sample_type
+        )
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/analyze/image")
 async def analyze_image(req: VisionAnalysisRequest):

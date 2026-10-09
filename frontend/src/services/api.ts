@@ -119,6 +119,53 @@ export const api = {
     return res.json();
   },
 
+  // Image Upload for Field Photos
+  async uploadImage(file: File): Promise<{ url: string; filename: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const headers: Record<string, string> = {};
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+    } catch (err) {
+      console.warn('Could not read auth for image upload', err);
+    }
+    const res = await fetch(`${API_BASE}/upload`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Image upload failed');
+    }
+    return res.json();
+  },
+
+  // Excreta (Manure / Urine) Multi-Agent Analysis
+  async runExcretaAgentAnalysis(payload: {
+    animal_id: string;
+    image_url: string;
+    sample_type: string;
+    behavior_notes?: string;
+    temperature?: number;
+  }): Promise<MultiAgentAnalysisResult> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_BASE}/analyze/excreta-agent`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Excreta multi-agent analysis failed');
+    }
+    return res.json();
+  },
+
+
   // YOLO26 Custom Disease Risk Classifier
   async yoloScreenImage(payload: {
     image_url: string;
@@ -303,18 +350,6 @@ export const api = {
     const url = animal_id ? `${API_BASE}/agents/${animal_id}` : `${API_BASE}/agents`;
     const res = await fetch(url, { headers });
     if (!res.ok) throw new Error('Failed to fetch agent activities');
-    return res.json();
-  },
-
-  // Upload image
-  async uploadImage(file: File): Promise<{ url: string; filename: string }> {
-    const formData = new FormData();
-    formData.append('file', file);
-    const res = await fetch(`${API_BASE}/upload`, {
-      method: 'POST',
-      body: formData,
-    });
-    if (!res.ok) throw new Error('Image upload failed');
     return res.json();
   },
 

@@ -1,16 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Zap, 
-  RotateCcw, 
   ShieldCheck, 
-  Loader2, 
   Menu, 
   ChevronDown, 
-  User, 
   LogOut, 
   LogIn, 
   Settings as SettingsIcon,
-  CheckCircle2,
   AlertTriangle
 } from 'lucide-react';
 import { api } from '../services/api';
@@ -19,8 +14,6 @@ import { useAuth } from '../context/AuthContext';
 interface NavbarProps {
   currentTab: string;
   setCurrentTab: (tab: string) => void;
-  onSimulationSuccess: (result: any) => void;
-  onResetSuccess: () => void;
   onOpenAuth: () => void;
   onToggleMobileMenu: () => void;
 }
@@ -28,21 +21,15 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ 
   currentTab, 
   setCurrentTab,
-  onSimulationSuccess, 
-  onResetSuccess,
   onOpenAuth,
   onToggleMobileMenu
 }) => {
   const { user, profile, isDemo, signOut } = useAuth();
-  const [simulating, setSimulating] = useState(false);
-  const [resetting, setResetting] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [showDemoMenu, setShowDemoMenu] = useState(false);
   const [isBackendHealthy, setIsBackendHealthy] = useState<boolean | null>(null);
 
   const profileMenuRef = useRef<HTMLDivElement>(null);
-  const demoMenuRef = useRef<HTMLDivElement>(null);
 
   // Verified health check
   useEffect(() => {
@@ -65,9 +52,6 @@ export const Navbar: React.FC<NavbarProps> = ({
       if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
         setShowProfileMenu(false);
       }
-      if (demoMenuRef.current && !demoMenuRef.current.contains(e.target as Node)) {
-        setShowDemoMenu(false);
-      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -86,31 +70,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     }
   };
 
-  const handleSimulate = async () => {
-    try {
-      setSimulating(true);
-      setShowDemoMenu(false);
-      const res = await api.simulateHealthEvent('COW-027');
-      onSimulationSuccess(res);
-    } catch (err: any) {
-      alert(`Simulation error: ${err.message}`);
-    } finally {
-      setSimulating(false);
-    }
-  };
-
-  const handleReset = async () => {
-    try {
-      setResetting(true);
-      setShowDemoMenu(false);
-      await api.resetDemo();
-      onResetSuccess();
-    } catch (err: any) {
-      alert(`Demo reset error: ${err.message}`);
-    } finally {
-      setResetting(false);
-    }
-  };
 
   return (
     <header className="h-16 bg-white border-b border-[#E5EAF0] px-4 sm:px-6 flex items-center justify-between z-30 sticky top-0">
@@ -161,54 +120,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           <span>Safety Notice</span>
         </button>
 
-        {/* Demo Mode Dropdown Panel */}
-        <div className="relative" ref={demoMenuRef}>
-          <button
-            onClick={() => setShowDemoMenu(!showDemoMenu)}
-            className="text-xs font-medium px-3 py-1.5 rounded-lg border border-[#C4EBD5] bg-[#EAF7F0] text-[#16845B] hover:bg-[#d8f2e3] flex items-center gap-1.5 transition-colors shadow-xs"
-          >
-            <span className="w-2 h-2 rounded-full bg-[#16845B]" />
-            <span className="font-semibold">Demo Sandbox</span>
-            <ChevronDown className="w-3.5 h-3.5" />
-          </button>
-
-          {showDemoMenu && (
-            <div className="absolute right-0 mt-2 w-72 bg-white border border-[#E5EAF0] rounded-xl shadow-xl p-3 z-50 text-left animate-in fade-in duration-150">
-              <div className="border-b border-[#E5EAF0] pb-2 mb-2">
-                <p className="text-xs font-bold text-[#172033]">Demonstration Controls</p>
-                <p className="text-[11px] text-[#667085]">
-                  Test acute illness detection workflow on Holstein cow COW-027.
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <button
-                  onClick={handleSimulate}
-                  disabled={simulating || resetting}
-                  className="w-full py-2 px-3 bg-[#16845B] hover:bg-[#126b49] text-white text-xs font-semibold rounded-lg flex items-center justify-between transition-colors disabled:opacity-60"
-                >
-                  <span className="flex items-center gap-1.5">
-                    {simulating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5 text-amber-200 fill-amber-200" />}
-                    <span>Simulate Fever (COW-027)</span>
-                  </span>
-                  <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded">Risk 78</span>
-                </button>
-
-                <button
-                  onClick={handleReset}
-                  disabled={simulating || resetting}
-                  className="w-full py-1.5 px-3 bg-[#F7F9FC] hover:bg-slate-100 text-[#172033] border border-[#E5EAF0] text-xs font-medium rounded-lg flex items-center justify-between transition-colors disabled:opacity-60"
-                >
-                  <span className="flex items-center gap-1.5">
-                    {resetting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5 text-slate-500" />}
-                    <span>Reset to Healthy Baseline</span>
-                  </span>
-                  <span className="text-[10px] text-[#16845B]">Risk 18</span>
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
 
         {/* Farmer Profile Menu */}
         <div className="relative" ref={profileMenuRef}>

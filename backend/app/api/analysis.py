@@ -90,3 +90,29 @@ async def upload_image(file: UploadFile = File(...)):
         return {"url": image_url, "filename": filename, "status": "success"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Image upload failed: {str(e)}")
+
+from pydantic import BaseModel
+from typing import Optional
+
+class YOLOScreenRequest(BaseModel):
+    image_url: str
+    sample_type: Optional[str] = "manure_closeup"
+    animal_id: Optional[str] = "COW-027"
+    farm_id: Optional[str] = "FARM-VALLEY-01"
+
+@router.post("/analyze/yolo-screen")
+async def yolo_screen_image(req: YOLOScreenRequest):
+    """
+    Runs YOLO26 livestock disease risk screening on manure, urine, or cow body images.
+    Outputs calibrated disease risk probabilities and structured veterinary triage report.
+    """
+    from app.services.yolo_service import YOLOScreeningService
+    try:
+        return YOLOScreeningService.screen_image(
+            image_path_or_url=req.image_url,
+            sample_type=req.sample_type,
+            animal_id=req.animal_id,
+            farm_id=req.farm_id
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

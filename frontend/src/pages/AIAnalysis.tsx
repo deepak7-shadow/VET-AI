@@ -52,6 +52,34 @@ export const AIAnalysis: React.FC<AIAnalysisProps> = ({
   const [showWhyModal, setShowWhyModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Analysis Mode Switcher
+  const [analysisMode, setAnalysisMode] = useState<'MULTIMODAL' | 'YOLO26'>('MULTIMODAL');
+
+  // YOLO26 Classifier State
+  const [yoloSampleType, setYoloSampleType] = useState<string>('manure_closeup');
+  const [yoloSelectedClass, setYoloSelectedClass] = useState<string>('coccidiosis');
+  const [yoloAnalyzing, setYoloAnalyzing] = useState(false);
+  const [yoloResult, setYoloResult] = useState<any>(null);
+
+  const handleRunYoloScreening = async () => {
+    try {
+      setYoloAnalyzing(true);
+      setError(null);
+      const samplePath = `ml/data/test/${yoloSelectedClass}/IMG-${yoloSelectedClass.slice(0,3).toUpperCase()}-00040.jpg`;
+      const res = await api.yoloScreenImage({
+        image_url: imagePreview && !imagePreview.startsWith('data:') && !imagePreview.startsWith('blob:') ? imagePreview : samplePath,
+        sample_type: yoloSampleType,
+        animal_id: selectedAnimalId,
+        farm_id: animals.find(a => a.animal_id === selectedAnimalId)?.farm || 'FARM-VALLEY-01'
+      });
+      setYoloResult(res);
+    } catch (err: any) {
+      setError(err.message || 'YOLO screening failed');
+    } finally {
+      setYoloAnalyzing(false);
+    }
+  };
+
   useEffect(() => {
     api.getAnimals().then(res => {
       setAnimals(res);
@@ -178,8 +206,35 @@ export const AIAnalysis: React.FC<AIAnalysisProps> = ({
         </div>
       )}
 
-      {/* Main Analysis Layout: Inputs Left, Pipeline/Results Right */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* Mode Navigation Tabs */}
+      <div className="flex border-b border-[#E5EAF0] gap-4 mb-2">
+        <button
+          onClick={() => setAnalysisMode('MULTIMODAL')}
+          className={`pb-3 text-sm font-semibold transition-colors flex items-center gap-2 border-b-2 ${
+            analysisMode === 'MULTIMODAL'
+              ? 'border-[#16845B] text-[#16845B]'
+              : 'border-transparent text-[#667085] hover:text-[#172033]'
+          }`}
+        >
+          <Layers className="w-4 h-4" />
+          <span>Multimodal Agent Pipeline (Vision + Sensors + RAG)</span>
+        </button>
+        <button
+          onClick={() => setAnalysisMode('YOLO26')}
+          className={`pb-3 text-sm font-semibold transition-colors flex items-center gap-2 border-b-2 ${
+            analysisMode === 'YOLO26'
+              ? 'border-[#16845B] text-[#16845B]'
+              : 'border-transparent text-[#667085] hover:text-[#172033]'
+          }`}
+        >
+          <Cpu className="w-4 h-4 text-emerald-600" />
+          <span>YOLO26 Disease Risk Triage (5 Target Diseases + Controls)</span>
+        </button>
+      </div>
+
+      {analysisMode === 'MULTIMODAL' ? (
+        /* Main Analysis Layout: Inputs Left, Pipeline/Results Right */
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Multimodal Inputs (5 Cols) */}
         <div className="lg:col-span-5 space-y-5">
           <div className="bg-white border border-[#E5EAF0] rounded-2xl p-5 shadow-xs space-y-4">
@@ -563,6 +618,217 @@ export const AIAnalysis: React.FC<AIAnalysisProps> = ({
           )}
         </div>
       </div>
+      ) : (
+        /* YOLO26 Disease Risk Triage Layout (5 Target Diseases + Controls) */
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left Column: Sample & Target Preset Selection (5 Cols) */}
+          <div className="lg:col-span-5 space-y-5">
+            <div className="bg-white border border-[#E5EAF0] rounded-2xl p-5 shadow-xs space-y-4">
+              <h3 className="text-sm font-bold text-[#172033] flex items-center gap-2">
+                <Camera className="w-4 h-4 text-[#16845B]" />
+                <span>1. Clinical Sample & Target Pathology</span>
+              </h3>
+
+              {/* Sample Type Selection */}
+              <div>
+                <label className="block text-xs font-semibold text-[#172033] mb-1">
+                  Sample / Image Category
+                </label>
+                <select
+                  value={yoloSampleType}
+                  onChange={(e) => setYoloSampleType(e.target.value)}
+                  className="w-full px-3 py-2 text-xs bg-[#F7F9FC] border border-[#E5EAF0] rounded-xl text-[#172033] focus:outline-none focus:border-[#16845B] focus:bg-white"
+                >
+                  <option value="manure_closeup">Manure Close-Up (Scour, Mucus, Frank Blood)</option>
+                  <option value="urine_stream_perineal">Urine Stream / Perineal Region (Port-Wine, Turbid)</option>
+                  <option value="full_calf_body">Full Calf Appearance (Lethargy, Dehydration)</option>
+                  <option value="adult_cow_body">Adult Cow Body (Arched Posture, Flaccid Udder)</option>
+                  <option value="head_mucous_membranes">Head & Mucous Membranes (Blunting, Petechiae)</option>
+                </select>
+              </div>
+
+              {/* Prototype Disease Preset Selector */}
+              <div>
+                <label className="block text-xs font-semibold text-[#172033] mb-1">
+                  Prototype Clinical Preset (Hold-out Test Split)
+                </label>
+                <div className="space-y-1.5">
+                  {[
+                    { id: 'coccidiosis', label: 'Bovine Coccidiosis', desc: 'Eimeria spp. (Hemorrhagic scour)', badge: 'Disease' },
+                    { id: 'salmonellosis', label: 'Bovine Salmonellosis', desc: 'S. enterica (Foul fibrinous diarrhea)', badge: 'Disease' },
+                    { id: 'bvd', label: 'Bovine Viral Diarrhea', desc: 'BVDV (Watery mucoid scour)', badge: 'Disease' },
+                    { id: 'leptospirosis', label: 'Bovine Leptospirosis', desc: 'Redwater port-wine hematuria', badge: 'Disease' },
+                    { id: 'uti_kidney', label: 'UTI / Pyelonephritis', desc: 'Purulent turbid urine & stranguria', badge: 'Disease' },
+                    { id: 'healthy', label: 'Healthy Control', desc: 'Normal formed manure / clear amber urine', badge: 'Control' },
+                    { id: 'other_diarrhea', label: 'Other Diarrhea Control', desc: 'Nutritional / non-target viral scour', badge: 'Control' },
+                  ].map(p => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setYoloSelectedClass(p.id)}
+                      className={`w-full text-left p-2.5 rounded-xl border text-xs flex items-center justify-between transition-all ${
+                        yoloSelectedClass === p.id
+                          ? 'bg-[#EAF7F0] border-[#C4EBD5] text-[#16845B] font-semibold shadow-xs'
+                          : 'bg-[#F7F9FC] border-[#E5EAF0] text-[#172033] hover:bg-slate-100'
+                      }`}
+                    >
+                      <div>
+                        <div className="font-bold">{p.label}</div>
+                        <div className="text-[11px] text-[#667085]">{p.desc}</div>
+                      </div>
+                      <span className={`text-[10px] px-2 py-0.5 rounded font-mono ${p.badge === 'Control' ? 'bg-blue-50 text-blue-700' : 'bg-red-50 text-red-700'}`}>
+                        {p.badge}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Run Button */}
+              <button
+                onClick={handleRunYoloScreening}
+                disabled={yoloAnalyzing}
+                className="w-full py-2.5 px-4 bg-[#16845B] hover:bg-[#126b49] disabled:bg-slate-300 text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-2 transition-all shadow-xs"
+              >
+                {yoloAnalyzing ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Running YOLO26 Visual Classifier...</span>
+                  </>
+                ) : (
+                  <>
+                    <Cpu className="w-4 h-4" />
+                    <span>Run YOLO26 Disease Risk Screening</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Right Column: YOLO26 Triage Report & Probabilities (7 Cols) */}
+          <div className="lg:col-span-7 space-y-5">
+            {yoloResult ? (
+              <div className="space-y-5">
+                {/* Executive Risk Banner */}
+                <div className="bg-white border border-[#E5EAF0] rounded-2xl p-5 shadow-xs">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E5EAF0]">
+                    <div>
+                      <div className="text-xs text-[#667085] flex items-center gap-1.5">
+                        <Cpu className="w-3.5 h-3.5 text-[#16845B]" />
+                        <span>Model: {yoloResult.model}</span>
+                      </div>
+                      <div className="text-base font-bold text-[#172033] mt-1">
+                        Primary Finding: {yoloResult.top_indication}
+                      </div>
+                      <div className="text-xs text-[#667085]">
+                        Calibrated Probability: <span className="font-mono font-bold text-[#172033]">{yoloResult.top_probability}%</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <div className="text-[11px] text-[#667085]">Calculated Risk</div>
+                        <div className="text-2xl font-extrabold text-[#172033]">
+                          {yoloResult.disease_risk_score} <span className="text-xs font-normal text-[#667085]">/ 100</span>
+                        </div>
+                      </div>
+                      <div className={`px-3 py-1.5 rounded-xl border text-xs font-bold ${
+                        yoloResult.risk_tier.includes('CRITICAL') ? 'bg-red-100 text-red-800 border-red-300' :
+                        yoloResult.risk_tier.includes('HIGH') ? 'bg-orange-100 text-orange-800 border-orange-300' :
+                        yoloResult.risk_tier.includes('MEDIUM') ? 'bg-amber-100 text-amber-800 border-amber-300' :
+                        'bg-emerald-100 text-emerald-800 border-emerald-300'
+                      }`}>
+                        {yoloResult.risk_tier}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 7-Class Probability Distribution */}
+                  <div className="pt-4 space-y-2">
+                    <div className="text-xs font-bold text-[#172033] mb-2 flex items-center justify-between">
+                      <span>7-Class Visual Probability Spectrum</span>
+                      <span className="text-[10px] text-[#667085] font-normal">Softmax Calibrated</span>
+                    </div>
+                    {Object.entries(yoloResult.class_probabilities || {}).map(([cName, prob]: any) => (
+                      <div key={cName} className="space-y-1">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-[#172033] text-[11px] font-medium">{cName}</span>
+                          <span className="font-mono text-[11px] font-bold text-[#667085]">{prob}%</span>
+                        </div>
+                        <div className="w-full bg-[#E5EAF0] h-2 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full transition-all duration-500 ${
+                              cName.includes('Healthy') ? 'bg-[#16845B]' : 'bg-red-500'
+                            }`}
+                            style={{ width: `${Math.min(100, prob)}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Clinical Overlap Notice */}
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs text-amber-900 flex items-start gap-3">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <div className="font-bold">Pathological Overlap Alert</div>
+                    <p className="text-[11px] leading-relaxed text-amber-800">
+                      {yoloResult.veterinary_triage_report?.overlap_analysis}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Mandated Confirmatory Diagnostic Tests */}
+                <div className="bg-white border border-[#E5EAF0] rounded-2xl p-5 shadow-xs space-y-3">
+                  <h4 className="text-xs font-bold text-[#172033] uppercase tracking-wider flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-[#16845B]" />
+                    <span>Required Laboratory Confirmatory Diagnostics</span>
+                  </h4>
+                  <div className="space-y-2">
+                    {yoloResult.veterinary_triage_report?.recommended_confirmatory_diagnostics.map((test: string, idx: number) => (
+                      <div key={idx} className="p-3 bg-[#F7F9FC] border border-[#E5EAF0] rounded-xl text-xs text-[#172033] flex items-start gap-2.5">
+                        <span className="font-mono font-bold text-[#16845B] text-[11px] shrink-0">#{idx + 1}</span>
+                        <span>{test}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Supportive On-Farm Management */}
+                <div className="bg-white border border-[#E5EAF0] rounded-2xl p-5 shadow-xs space-y-3">
+                  <h4 className="text-xs font-bold text-[#172033] uppercase tracking-wider flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-blue-600" />
+                    <span>Immediate On-Farm Supportive Protocol</span>
+                  </h4>
+                  <div className="space-y-2">
+                    {yoloResult.veterinary_triage_report?.immediate_supportive_actions.map((act: string, idx: number) => (
+                      <div key={idx} className="p-2.5 bg-blue-50/50 border border-blue-100 rounded-xl text-xs text-[#172033] flex items-start gap-2">
+                        <ArrowRight className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
+                        <span>{act}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Regulatory Disclaimer */}
+                <div className="p-3 bg-[#FFFBEB] border border-[#FDE68A] rounded-xl text-[11px] text-[#92400E] flex items-start gap-2">
+                  <ShieldCheck className="w-4 h-4 text-[#B45309] shrink-0 mt-0.5" />
+                  <span>{yoloResult.regulatory_disclaimer}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="p-8 text-center text-xs text-slate-500 bg-white border border-[#E5EAF0] rounded-2xl space-y-2">
+                <Cpu className="w-8 h-8 text-slate-400 mx-auto" />
+                <div className="font-semibold text-sm text-[#172033]">YOLO26 Custom Disease Risk Triage</div>
+                <p className="max-w-md mx-auto text-[11px] text-[#667085]">
+                  Select a clinical sample category (manure or urine) and pick one of the verified prototype disease presets (Coccidiosis, Salmonellosis, BVD, Leptospirosis, or UTI), then click Run to review the risk distribution and mandatory confirmatory tests.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Explainability Breakdown Modal */}
       {showWhyModal && result && (

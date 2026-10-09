@@ -119,6 +119,45 @@ export const api = {
     return res.json();
   },
 
+  // YOLO26 Custom Disease Risk Classifier
+  async yoloScreenImage(payload: {
+    image_url: string;
+    sample_type?: string;
+    animal_id?: string;
+    farm_id?: string;
+  }): Promise<{
+    model: string;
+    animal_id: string;
+    farm_id: string;
+    sample_type: string;
+    disease_risk_score: number;
+    risk_tier: string;
+    top_indication: string;
+    top_probability: number;
+    class_probabilities: Record<string, number>;
+    veterinary_triage_report: {
+      summary: string;
+      overlap_analysis: string;
+      differential_diagnoses: Array<{ condition: string; visual_probability_pct: number }>;
+      recommended_confirmatory_diagnostics: string[];
+      immediate_supportive_actions: string[];
+    };
+    status: string;
+    regulatory_disclaimer: string;
+  }> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_BASE}/analyze/yolo-screen`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'YOLO screening analysis failed');
+    }
+    return res.json();
+  },
+
   // Demo Simulation
   async simulateHealthEvent(animal_id: string = 'COW-027'): Promise<any> {
     const headers = await getAuthHeaders();

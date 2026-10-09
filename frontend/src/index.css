@@ -1,0 +1,141 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-primary: #F7F9FC;
+    --surface-card: #FFFFFF;
+    --text-primary: #172033;
+    --text-secondary: #667085;
+    --brand-green: #16845B;
+    --brand-green-light: #EAF7F0;
+    --brand-green-hover: #126b49;
+    --border-color: #E5EAF0;
+    --warning-color: #B7791F;
+    --warning-bg: #FEF9C3;
+    --high-risk-color: #D97732;
+    --high-risk-bg: #FFEDD5;
+    --critical-risk-color: #D14343;
+    --critical-risk-bg: #FEE2E2;
+    --info-color: #3877C8;
+    --info-bg: #EFF6FF;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* Refined enterprise scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F4F9;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Premium Card & Surface Utility Classes */
+.card-surface {
+  background-color: #FFFFFF;
+  border: 1px solid #E5EAF0;
+  border-radius: 0.875rem; /* 14px */
+  box-shadow: 0 1px 3px 0 rgba(16, 24, 40, 0.05), 0 1px 2px -1px rgba(16, 24, 40, 0.05);
+}
+
+.card-elevated {
+  background-color: #FFFFFF;
+  border: 1px solid #E5EAF0;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(16, 24, 40, 0.06), 0 2px 4px -2px rgba(16, 24, 40, 0.04);
+}
+
+.card-interactive {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.card-interactive:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 10px 15px -3px rgba(16, 24, 40, 0.08), 0 4px 6px -4px rgba(16, 24, 40, 0.04);
+}
+
+/* Standardized Risk Badges */
+.badge-risk-low {
+  background-color: #EAF7F0;
+  color: #16845B;
+  border: 1px solid #C4EBD5;
+}
+
+.badge-risk-moderate {
+  background-color: #FEF9C3;
+  color: #854D0E;
+  border: 1px solid #FEF08A;
+}
+
+.badge-risk-high {
+  background-color: #FFEDD5;
+  color: #C2410C;
+  border: 1px solid #FED7AA;
+}
+
+.badge-risk-critical {
+  background-color: #FEE2E2;
+  color: #B91C1C;
+  border: 1px solid #FECACA;
+}
+
+/* Form controls */
+.input-field {
+  background-color: #FFFFFF;
+  border: 1px solid #E5EAF0;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: #172033;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.input-field:focus {
+  outline: none;
+  border-color: #16845B;
+  box-shadow: 0 0 0 3px rgba(22, 132, 91, 0.12);
+}
+
+/* Button variants */
+.btn-primary {
+  background-color: #16845B;
+  color: #FFFFFF;
+  font-weight: 500;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+.btn-primary:hover {
+  background-color: #126B49;
+  box-shadow: 0 2px 4px rgba(22, 132, 91, 0.2);
+}
+
+.btn-secondary {
+  background-color: #FFFFFF;
+  color: #172033;
+  border: 1px solid #E5EAF0;
+  font-weight: 500;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.btn-secondary:hover {
+  background-color: #F8FAFC;
+  border-color: #CBD5E1;
+}

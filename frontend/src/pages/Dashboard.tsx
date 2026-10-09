@@ -9,7 +9,9 @@ import {
   RefreshCw, 
   ArrowRight, 
   ChevronRight,
-  TrendingDown
+  TrendingDown,
+  Sparkles,
+  Play
 } from 'lucide-react';
 import { 
   ResponsiveContainer, 
@@ -27,6 +29,7 @@ import { DashboardData } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { ExcretaScreeningModal } from '../components/ExcretaScreeningModal';
 import { AIAgentVisualizationHero } from '../components/AIAgentVisualizationHero';
+import { FrameScrollShowcase } from '../components/FrameScrollShowcase';
 
 interface DashboardProps {
   onNavigateToAnimal: (id: string) => void;
@@ -48,6 +51,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isExcretaModalOpen, setIsExcretaModalOpen] = useState(false);
+  const [showcaseMode, setShowcaseMode] = useState<'SCROLL_ANIMATION' | 'TELEMETRY'>('SCROLL_ANIMATION');
 
   const fetchDashboard = async () => {
     try {
@@ -118,13 +122,54 @@ export const Dashboard: React.FC<DashboardProps> = ({
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
       
-      {/* 1. Hero AI Agent Visualization & Digital Twin (From Reference Video Frames) */}
-      <AIAgentVisualizationHero
-        onNavigateToAnalysis={onNavigateToAnalysis}
-        onOpenExcretaModal={() => setIsExcretaModalOpen(true)}
-        onOpenAddAnimal={onOpenAddAnimal}
-        stats={stats}
-      />
+      {/* View Switcher Bar */}
+      <div className="card-surface p-2 sm:p-2.5 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="flex items-center gap-1.5 w-full sm:w-auto">
+          <button
+            onClick={() => setShowcaseMode('SCROLL_ANIMATION')}
+            className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+              showcaseMode === 'SCROLL_ANIMATION'
+                ? 'bg-[#16845B] text-white shadow-md shadow-emerald-900/15'
+                : 'bg-[#F7F9FC] text-[#667085] hover:text-[#172033] hover:bg-slate-100'
+            }`}
+          >
+            <Play className="w-3.5 h-3.5" />
+            <span>3D Frame Scroll Walkthrough</span>
+          </button>
+          <button
+            onClick={() => setShowcaseMode('TELEMETRY')}
+            className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+              showcaseMode === 'TELEMETRY'
+                ? 'bg-[#16845B] text-white shadow-md shadow-emerald-900/15'
+                : 'bg-[#F7F9FC] text-[#667085] hover:text-[#172033] hover:bg-slate-100'
+            }`}
+          >
+            <Activity className="w-3.5 h-3.5" />
+            <span>Live Telemetry Digital Twin</span>
+          </button>
+        </div>
+
+        <div className="text-[11px] text-[#667085] font-medium hidden md:flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-[#16845B] animate-pulse" />
+          <span>Interactive 50 FPS Sequence • Scroll-Scrub Ready</span>
+        </div>
+      </div>
+
+      {/* Hero Showcase Switcher: Frame Scroll Animation vs Live Telemetry Arena */}
+      {showcaseMode === 'SCROLL_ANIMATION' ? (
+        <FrameScrollShowcase
+          totalFrames={120}
+          onNavigateToAnalysis={onNavigateToAnalysis}
+          onOpenExcretaModal={() => setIsExcretaModalOpen(true)}
+        />
+      ) : (
+        <AIAgentVisualizationHero
+          onNavigateToAnalysis={onNavigateToAnalysis}
+          onOpenExcretaModal={() => setIsExcretaModalOpen(true)}
+          onOpenAddAnimal={onOpenAddAnimal}
+          stats={stats}
+        />
+      )}
 
       {/* 2. Key Metrics Cards Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-4">

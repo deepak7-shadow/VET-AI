@@ -219,7 +219,7 @@ function AppShell() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#F7F9FC]">
+    <div className="flex h-screen overflow-hidden bg-[#F7F9FC] bg-topo-pattern">
       {/* Sidebar */}
       <Sidebar
         currentTab={selectedAnimalId ? 'animals' : currentTab}
@@ -235,8 +235,6 @@ function AppShell() {
         <Navbar
           currentTab={selectedAnimalId ? 'animals' : currentTab}
           setCurrentTab={handleTabChange}
-          onSimulationSuccess={handleSimulationSuccess}
-          onResetSuccess={handleResetSuccess}
           onOpenAuth={() => setAuthModalOpen(true)}
           onToggleMobileMenu={() => setMobileMenuOpen(prev => !prev)}
         />

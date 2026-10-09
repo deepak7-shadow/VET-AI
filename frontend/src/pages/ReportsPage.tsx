@@ -3,16 +3,14 @@ import {
   FileText, 
   Search, 
   Download, 
-  Filter, 
-  RefreshCw, 
   Calendar, 
-  CheckCircle2, 
-  Building,
-  ShieldCheck,
-  Eye,
-  FileSpreadsheet,
-  Loader2,
-  X
+  Building, 
+  ShieldCheck, 
+  Eye, 
+  FileSpreadsheet, 
+  Loader2, 
+  X,
+  RefreshCw 
 } from 'lucide-react';
 import { api } from '../services/api';
 import { Report } from '../types';
@@ -69,7 +67,7 @@ export const ReportsPage: React.FC = () => {
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="bg-white border border-[#E5EAF0] rounded-2xl p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="card-surface p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-xl sm:text-2xl font-bold text-[#172033] tracking-tight">Veterinary Clinical Reports</h2>
@@ -77,7 +75,7 @@ export const ReportsPage: React.FC = () => {
               {reports.length} Archived
             </span>
           </div>
-          <p className="text-xs text-[#667085] mt-1 max-w-2xl">
+          <p className="text-xs sm:text-sm text-[#667085] mt-1 max-w-2xl font-medium">
             Official multi-agent clinical decision support assessments, telemetry variance evidence, and downloadable printable PDF summaries.
           </p>
         </div>
@@ -85,7 +83,7 @@ export const ReportsPage: React.FC = () => {
         <button
           onClick={handleExportCsv}
           disabled={filteredReports.length === 0}
-          className="px-3.5 py-2 bg-white border border-[#E5EAF0] hover:bg-slate-50 text-[#172033] text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors shadow-xs self-start md:self-auto disabled:opacity-50"
+          className="btn-secondary text-xs self-start md:self-auto disabled:opacity-50"
         >
           <FileSpreadsheet className="w-4 h-4 text-[#16845B]" />
           <span>Export History (CSV)</span>
@@ -93,7 +91,7 @@ export const ReportsPage: React.FC = () => {
       </div>
 
       {/* Filters & Search */}
-      <div className="bg-white border border-[#E5EAF0] rounded-2xl p-4 shadow-xs flex flex-wrap items-center gap-3">
+      <div className="card-surface p-4 shadow-xs flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[220px]">
           <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
           <input
@@ -128,9 +126,9 @@ export const ReportsPage: React.FC = () => {
           <p className="text-xs text-[#667085]">Loading clinical reports from Supabase...</p>
         </div>
       ) : filteredReports.length === 0 ? (
-        <div className="bg-white border border-[#E5EAF0] rounded-2xl p-12 text-center max-w-md mx-auto shadow-xs">
+        <div className="card-surface p-12 text-center max-w-md mx-auto shadow-xs">
           <FileText className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-          <h3 className="font-bold text-sm text-[#172033]">No Reports Found</h3>
+          <h3 className="font-bold text-base text-[#172033]">No Reports Found</h3>
           <p className="text-xs text-[#667085] mt-1">No clinical assessments match your search criteria.</p>
         </div>
       ) : (
@@ -140,9 +138,9 @@ export const ReportsPage: React.FC = () => {
             return (
               <div
                 key={report.id}
-                className="bg-white border border-[#E5EAF0] hover:border-slate-300 rounded-2xl p-5 shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+                className="card-surface card-interactive p-5 shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
               >
-                <div className="space-y-2 flex-1">
+                <div className="space-y-2 flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2.5">
                     <span className="font-mono font-bold text-xs bg-slate-100 text-slate-800 px-2.5 py-1 rounded-md">
                       {report.animal_id}
@@ -171,7 +169,7 @@ export const ReportsPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2 shrink-0 self-start md:self-auto">
                   <button
                     onClick={() => setSelectedReport(report)}
                     className="px-3.5 py-2 bg-[#F7F9FC] hover:bg-slate-100 border border-[#E5EAF0] text-[#172033] text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors"
@@ -183,7 +181,7 @@ export const ReportsPage: React.FC = () => {
                   <button
                     onClick={() => handleDownloadPdf(report.id, report.animal_id)}
                     disabled={downloadingId === report.id}
-                    className="px-4 py-2 bg-[#16845B] hover:bg-[#126b49] text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors shadow-xs disabled:opacity-60"
+                    className="btn-primary text-xs disabled:opacity-60"
                   >
                     {downloadingId === report.id ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -277,7 +275,7 @@ export const ReportsPage: React.FC = () => {
               <button
                 onClick={() => handleDownloadPdf(selectedReport.id, selectedReport.animal_id)}
                 disabled={downloadingId === selectedReport.id}
-                className="px-4 py-2 bg-[#16845B] hover:bg-[#126b49] text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 shadow-xs transition-colors disabled:opacity-60"
+                className="btn-primary text-xs disabled:opacity-60"
               >
                 {downloadingId === selectedReport.id ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />

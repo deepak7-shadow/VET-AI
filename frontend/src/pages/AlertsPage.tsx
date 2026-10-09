@@ -75,10 +75,17 @@ export const AlertsPage: React.FC<AlertsPageProps> = ({ onNavigateToAnimal }) =>
     }
   };
 
+  const filterTabs = [
+    { id: 'ALL', label: 'All Alerts' },
+    { id: 'OPEN', label: 'Open (Action Required)' },
+    { id: 'ACKNOWLEDGED', label: 'Acknowledged' },
+    { id: 'RESOLVED', label: 'Resolved' },
+  ];
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="bg-white border border-[#E5EAF0] rounded-2xl p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="card-surface p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-xl sm:text-2xl font-bold text-[#172033] tracking-tight">Early Warning Health Alerts</h2>
@@ -86,24 +93,26 @@ export const AlertsPage: React.FC<AlertsPageProps> = ({ onNavigateToAnimal }) =>
               {alerts.filter(a => a.status === 'OPEN').length} Open
             </span>
           </div>
-          <p className="text-xs text-[#667085] mt-1 max-w-2xl">
+          <p className="text-xs sm:text-sm text-[#667085] mt-1 max-w-2xl font-medium">
             Automated alerts dispatched when biometric deviation thresholds indicate acute illness or severe herd risk.
           </p>
         </div>
 
-        {/* Status Filter */}
-        <div className="flex items-center gap-2">
-          <label className="text-xs font-medium text-[#667085]">Status:</label>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 text-xs bg-[#F7F9FC] border border-[#E5EAF0] rounded-xl text-[#172033] focus:outline-none focus:border-[#16845B]"
-          >
-            <option value="ALL">All Alerts</option>
-            <option value="OPEN">Open (Requires Action)</option>
-            <option value="ACKNOWLEDGED">Acknowledged</option>
-            <option value="RESOLVED">Resolved</option>
-          </select>
+        {/* Status Filter Tabs */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {filterTabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setStatusFilter(tab.id)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                statusFilter === tab.id
+                  ? 'bg-[#16845B] text-white shadow-xs'
+                  : 'bg-[#F7F9FC] text-[#667085] hover:text-[#172033] hover:bg-slate-100'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -121,9 +130,9 @@ export const AlertsPage: React.FC<AlertsPageProps> = ({ onNavigateToAnimal }) =>
           <p className="text-xs text-[#667085]">Loading alert telemetry from Supabase...</p>
         </div>
       ) : alerts.length === 0 ? (
-        <div className="bg-white border border-[#E5EAF0] rounded-2xl p-12 text-center max-w-md mx-auto shadow-xs">
+        <div className="card-surface p-12 text-center max-w-md mx-auto shadow-xs">
           <CheckCircle2 className="w-10 h-10 text-[#16845B] mx-auto mb-3" />
-          <h3 className="font-bold text-sm text-[#172033]">All Clear — No Alerts</h3>
+          <h3 className="font-bold text-base text-[#172033]">All Clear — No Alerts</h3>
           <p className="text-xs text-[#667085] mt-1">
             No health alerts currently match your filter settings.
           </p>
@@ -133,9 +142,9 @@ export const AlertsPage: React.FC<AlertsPageProps> = ({ onNavigateToAnimal }) =>
           {alerts.map((alert) => (
             <div
               key={alert.id}
-              className="bg-white border border-[#E5EAF0] hover:border-slate-300 rounded-2xl p-5 shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+              className="card-surface card-interactive p-5 shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
             >
-              <div className="space-y-2 flex-1">
+              <div className="space-y-2 flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2.5">
                   <span className="font-mono font-bold text-xs bg-slate-100 text-slate-800 px-2.5 py-1 rounded-md">
                     {alert.animal_id}
@@ -148,7 +157,7 @@ export const AlertsPage: React.FC<AlertsPageProps> = ({ onNavigateToAnimal }) =>
                   }`}>
                     {alert.status}
                   </span>
-                  <span className="text-xs text-[#667085] flex items-center gap-1">
+                  <span className="text-xs text-[#667085] flex items-center gap-1 ml-auto sm:ml-0">
                     <Clock className="w-3.5 h-3.5 text-slate-400" />
                     <span>{new Date(alert.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                   </span>
@@ -159,7 +168,7 @@ export const AlertsPage: React.FC<AlertsPageProps> = ({ onNavigateToAnimal }) =>
               </div>
 
               {/* Actions */}
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-2 shrink-0 self-start md:self-auto">
                 {onNavigateToAnimal && alert.animal_id && (
                   <button
                     onClick={() => onNavigateToAnimal(alert.animal_id)}

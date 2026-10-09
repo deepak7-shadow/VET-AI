@@ -33,3 +33,4 @@ frontend/dist-ssr/
 *.swo
 .DS_Store
 Thumbs.db
+reference_frames/

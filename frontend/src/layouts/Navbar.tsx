@@ -6,7 +6,10 @@ import {
   LogOut, 
   LogIn, 
   Settings as SettingsIcon,
-  AlertTriangle
+  AlertTriangle,
+  Search,
+  Bell,
+  Activity
 } from 'lucide-react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -28,10 +31,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isBackendHealthy, setIsBackendHealthy] = useState<boolean | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
-  // Verified health check
+  // Health check
   useEffect(() => {
     api.checkHealth()
       .then(() => setIsBackendHealthy(true))
@@ -60,8 +64,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   const getTitle = () => {
     switch (currentTab) {
       case 'dashboard': return 'Farm Health Dashboard';
-      case 'animals': return 'Livestock Directory';
-      case 'analysis': return 'AI Health Analysis Console';
+      case 'animals': return 'Livestock Registry';
+      case 'analysis': return 'AI Health Screening Console';
       case 'agents': return 'Multi-Agent Intelligence';
       case 'alerts': return 'Early Warning Alerts';
       case 'reports': return 'Veterinary Clinical Reports';
@@ -70,29 +74,56 @@ export const Navbar: React.FC<NavbarProps> = ({
     }
   };
 
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      setCurrentTab('animals');
+    }
+  };
 
   return (
-    <header className="h-16 bg-white border-b border-[#E5EAF0] px-4 sm:px-6 flex items-center justify-between z-30 sticky top-0">
+    <header className="h-16 bg-white/95 backdrop-blur-md border-b border-[#E5EAF0] px-4 sm:px-6 lg:px-8 flex items-center justify-between z-30 sticky top-0 transition-all">
       {/* Left: Mobile hamburger & Page Title */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 shrink-0">
         <button
           onClick={onToggleMobileMenu}
-          className="p-2 -ml-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg lg:hidden"
+          className="p-2 -ml-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl lg:hidden transition-colors"
           aria-label="Open navigation menu"
         >
           <Menu className="w-5 h-5" />
         </button>
 
         <div>
-          <h1 className="text-base sm:text-lg font-bold text-[#172033] tracking-tight">{getTitle()}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-sm sm:text-base font-bold text-[#172033] tracking-tight">{getTitle()}</h1>
+            <span className="hidden sm:inline-block w-1.5 h-1.5 rounded-full bg-slate-300" />
+            <span className="hidden sm:inline-block text-[11px] font-medium text-[#667085]">Multi-Agent Intelligence</span>
+          </div>
         </div>
+      </div>
 
+      {/* Center: Search pill matching reference video frames */}
+      <div className="hidden md:flex flex-1 max-w-md mx-6">
+        <form onSubmit={handleSearchSubmit} className="w-full relative">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search livestock ID, symptoms, alerts..."
+            className="w-full pl-10 pr-4 py-2 bg-[#F7F9FC] hover:bg-[#F1F4F9] focus:bg-white text-xs text-[#172033] placeholder-slate-400 rounded-full border border-[#E5EAF0] focus:border-[#16845B] focus:ring-2 focus:ring-[#16845B]/15 transition-all outline-hidden"
+          />
+        </form>
+      </div>
+
+      {/* Right: Actions, System Health & User Controls */}
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         {/* Verified Server & DB Health Indicator */}
-        <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#F7F9FC] border border-[#E5EAF0] text-[11px] text-[#667085]">
+        <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#F7F9FC] border border-[#E5EAF0] text-[11px] text-[#667085]">
           {isBackendHealthy === true ? (
             <>
-              <span className="w-2 h-2 rounded-full bg-[#16845B]" />
-              <span className="font-medium text-[#16845B]">System Online</span>
+              <span className="w-2 h-2 rounded-full bg-[#16845B] animate-pulse" />
+              <span className="font-semibold text-[#16845B]">System Online</span>
             </>
           ) : isBackendHealthy === false ? (
             <>
@@ -102,30 +133,36 @@ export const Navbar: React.FC<NavbarProps> = ({
           ) : (
             <>
               <span className="w-2 h-2 rounded-full bg-slate-300 animate-pulse" />
-              <span>Verifying Connection...</span>
+              <span>Connecting...</span>
             </>
           )}
         </div>
-      </div>
 
-      {/* Right: Actions & User Controls */}
-      <div className="flex items-center gap-2.5">
         {/* Safety Disclaimer button */}
         <button
           onClick={() => setShowDisclaimer(true)}
-          className="hidden sm:flex text-xs text-[#667085] hover:text-[#172033] items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-[#E5EAF0] hover:bg-[#F7F9FC] transition-colors"
+          className="hidden sm:flex text-xs text-[#667085] hover:text-[#172033] items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E5EAF0] hover:bg-[#F7F9FC] transition-colors"
           title="Clinical Safety Protocol"
         >
           <ShieldCheck className="w-3.5 h-3.5 text-[#16845B]" />
           <span>Safety Notice</span>
         </button>
 
+        {/* Quick Alerts Bell */}
+        <button
+          onClick={() => setCurrentTab('alerts')}
+          className="p-2 text-slate-500 hover:text-[#172033] hover:bg-[#F7F9FC] rounded-xl border border-[#E5EAF0] transition-colors relative"
+          title="Alerts"
+          aria-label="View alerts"
+        >
+          <Bell className="w-4 h-4" />
+        </button>
 
         {/* Farmer Profile Menu */}
         <div className="relative" ref={profileMenuRef}>
           <button
             onClick={() => setShowProfileMenu(!showProfileMenu)}
-            className="flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-xl border border-[#E5EAF0] hover:bg-[#F7F9FC] transition-colors"
+            className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1.5 rounded-xl border border-[#E5EAF0] hover:bg-[#F7F9FC] transition-colors"
           >
             <div className="w-7 h-7 rounded-lg bg-[#EAF7F0] text-[#16845B] font-bold text-xs flex items-center justify-center border border-[#C4EBD5]">
               {profile?.full_name ? profile.full_name.charAt(0).toUpperCase() : 'F'}
@@ -134,7 +171,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <p className="text-xs font-semibold text-[#172033] leading-none">
                 {profile?.full_name || (isDemo ? 'John Miller (Demo)' : 'Farmer')}
               </p>
-              <p className="text-[10px] text-[#667085] leading-none mt-0.5">
+              <p className="text-[10px] text-[#667085] leading-none mt-1">
                 {profile?.farm_name || 'Green Valley Dairy'}
               </p>
             </div>
@@ -142,7 +179,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           {showProfileMenu && (
-            <div className="absolute right-0 mt-2 w-60 bg-white border border-[#E5EAF0] rounded-xl shadow-xl py-2 z-50 text-left animate-in fade-in duration-150">
+            <div className="absolute right-0 mt-2 w-60 bg-white border border-[#E5EAF0] rounded-2xl shadow-xl py-2 z-50 text-left animate-in fade-in duration-150">
               <div className="px-4 py-2 border-b border-[#E5EAF0]">
                 <p className="text-xs font-bold text-[#172033]">{profile?.full_name || 'Farmer Account'}</p>
                 <p className="text-[11px] text-[#667085] truncate">{profile?.email || (isDemo ? 'demo.farmer@greenvalley.farm' : '')}</p>
@@ -165,7 +202,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {user ? (
                   <button
                     onClick={() => { signOut(); setShowProfileMenu(false); }}
-                    className="w-full px-4 py-2 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                    className="w-full px-4 py-2 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors font-medium"
                   >
                     <LogOut className="w-3.5 h-3.5" />
                     <span>Sign Out</span>
@@ -196,7 +233,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <p className="text-sm text-[#667085] leading-relaxed mb-4">
               VET-AI provides AI-assisted health-risk monitoring and early disease screening based on multi-sensor telemetry, computer vision, and veterinary literature.
             </p>
-            <div className="bg-[#FFFBEB] border border-[#FDE68A] p-3 rounded-xl text-xs text-[#92400E] mb-5 space-y-1.5">
+            <div className="bg-[#FFFBEB] border border-[#FDE68A] p-3.5 rounded-xl text-xs text-[#92400E] mb-5 space-y-1.5">
               <p className="font-semibold flex items-center gap-1.5">
                 <AlertTriangle className="w-3.5 h-3.5 text-[#B45309]" />
                 <span>Mandatory Clinical Limitations</span>

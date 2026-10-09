@@ -112,12 +112,11 @@ export const AIAnalysis: React.FC<AIAnalysisProps> = ({
   };
 
   const handleApplyPreset = () => {
-    setSelectedAnimalId('COW-027');
     setTemperature(40.1);
     setFeeding(65);
     setActivity(58);
     setBehaviorNotes('Acute lethargy, bilateral ear drooping, isolated from herd bunk, refusing grain');
-    setObservationSource('DEMO');
+    setObservationSource('MANUAL');
   };
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -246,19 +245,29 @@ export const AIAnalysis: React.FC<AIAnalysisProps> = ({
             {/* Animal Selection */}
             <div>
               <label className="block text-xs font-semibold text-[#172033] mb-1">
-                Select Monitored Animal
+                Monitored Animal Identifier
               </label>
-              <select
-                value={selectedAnimalId}
-                onChange={(e) => handleAnimalSelect(e.target.value)}
-                className="w-full px-3 py-2 text-xs bg-[#F7F9FC] border border-[#E5EAF0] rounded-xl text-[#172033] focus:outline-none focus:border-[#16845B] focus:bg-white"
-              >
-                {animals.map(a => (
-                  <option key={a.id} value={a.animal_id}>
-                    {a.animal_id} — {a.breed || a.species} ({a.farm || 'Herd'})
-                  </option>
-                ))}
-              </select>
+              {animals.length > 0 ? (
+                <select
+                  value={selectedAnimalId}
+                  onChange={(e) => handleAnimalSelect(e.target.value)}
+                  className="w-full px-3 py-2 text-xs bg-[#F7F9FC] border border-[#E5EAF0] rounded-xl text-[#172033] focus:outline-none focus:border-[#16845B] focus:bg-white"
+                >
+                  {animals.map(a => (
+                    <option key={a.id} value={a.animal_id}>
+                      {a.animal_id} — {a.breed || a.species} ({a.farm || 'Herd'})
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  placeholder="Enter Animal ID (e.g. COW-001)"
+                  value={selectedAnimalId}
+                  onChange={(e) => setSelectedAnimalId(e.target.value)}
+                  className="w-full px-3 py-2 text-xs bg-[#F7F9FC] border border-[#E5EAF0] rounded-xl text-[#172033] focus:outline-none focus:border-[#16845B] focus:bg-white"
+                />
+              )}
             </div>
 
             {/* Image Preview & Upload */}

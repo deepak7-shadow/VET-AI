@@ -209,4 +209,6 @@ Open `http://localhost:5173` in your browser.
 
 ## 🔒 Clinical Disclaimer
 
+
+
 *VET-AI provides AI-assisted health-risk monitoring and decision support based on multi-sensor telemetry, computer vision, and veterinary literature. It does NOT provide a definitive veterinary medical diagnosis. Always consult a licensed veterinarian for definitive diagnosis and treatment protocols.*

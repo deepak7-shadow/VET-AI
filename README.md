@@ -1,4 +1,4 @@
-# VET-AI: Multi-Agent Livestock Health Intelligence & Early Disease-Risk Detection Platform
+# VET-AI: Multi-Agent Livestock Health Intelligence & Early Disease-Risk Detection Platform/application
 
 VET-AI is a production-quality hackathon MVP designed for modern livestock farms and veterinary health teams. It leverages **Multi-Agent AI**, **Computer Vision**, **Retrieval-Augmented Generation (RAG)**, **Behavioral Telemetry**, and **Explainable Risk Scoring** to detect acute illness patterns (e.g., Bovine Respiratory Disease, Clinical Mastitis, Ruminal Acidosis) hours or days before visible clinical emergencies arise.
 

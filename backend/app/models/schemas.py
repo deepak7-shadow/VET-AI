@@ -3,6 +3,29 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 from uuid import UUID
 
+# --- Auth & Profile Schemas ---
+class UserProfile(BaseModel):
+    id: str
+    email: Optional[str] = None
+    full_name: Optional[str] = None
+    farm_name: Optional[str] = "Green Valley Farm"
+    phone: Optional[str] = None
+    role: Optional[str] = "farmer"
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+class UserProfileUpdate(BaseModel):
+    full_name: Optional[str] = None
+    farm_name: Optional[str] = None
+    phone: Optional[str] = None
+    role: Optional[str] = None
+
+class AuthStatusResponse(BaseModel):
+    authenticated: bool
+    is_demo: bool = False
+    user: Optional[UserProfile] = None
+    message: Optional[str] = None
+
 class AnimalBase(BaseModel):
     animal_id: str
     species: str

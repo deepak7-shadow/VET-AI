@@ -493,5 +493,28 @@ export const api = {
     a.click();
     window.URL.revokeObjectURL(url);
     document.body.removeChild(a);
+  },
+
+  // Auth & Profile Management
+  async getAuthStatus(): Promise<{ authenticated: boolean; is_demo: boolean; user?: any; message?: string }> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_BASE}/auth/me`, { headers });
+    if (!res.ok) throw new Error('Failed to fetch auth profile status');
+    return res.json();
+  },
+
+  async updateProfile(profileData: { full_name?: string; farm_name?: string; phone?: string; role?: string }): Promise<any> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_BASE}/auth/profile`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(profileData)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Failed to update farmer profile');
+    }
+    return res.json();
   }
 };
+

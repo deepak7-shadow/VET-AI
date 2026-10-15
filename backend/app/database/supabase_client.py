@@ -712,3 +712,43 @@ def get_herd_summary_report(run_id: str) -> Optional[Dict[str, Any]]:
     finally:
         conn.close()
 
+def get_user_profile(user_id: str) -> Optional[Dict[str, Any]]:
+    """Retrieve farmer profile by auth user UUID."""
+    conn = get_db_connection()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("SELECT * FROM profiles WHERE id = %s;", (user_id,))
+            row = cur.fetchone()
+            return dict(row) if row else None
+    finally:
+        conn.close()
+
+def upsert_user_profile(user_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
+    """Upsert farmer profile details."""
+    conn = get_db_connection()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                INSERT INTO profiles (id, full_name, email, farm_name, phone, role, updated_at)
+                VALUES (%s, %s, %s, %s, %s, %s, NOW())
+                ON CONFLICT (id) DO UPDATE SET
+                    full_name = COALESCE(EXCLUDED.full_name, profiles.full_name),
+                    email = COALESCE(EXCLUDED.email, profiles.email),
+                    farm_name = COALESCE(EXCLUDED.farm_name, profiles.farm_name),
+                    phone = COALESCE(EXCLUDED.phone, profiles.phone),
+                    role = COALESCE(EXCLUDED.role, profiles.role),
+                    updated_at = NOW()
+                RETURNING *;
+            """, (
+                user_id,
+                data.get("full_name"),
+                data.get("email"),
+                data.get("farm_name"),
+                data.get("phone"),
+                data.get("role", "farmer")
+            ))
+            return dict(cur.fetchone())
+    finally:
+        conn.close()
+
+

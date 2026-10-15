@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
-from app.api import animals, analysis, alerts, reports, agents, dashboard, demo
+from app.api import animals, analysis, alerts, reports, agents, dashboard, demo, auth
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -28,6 +28,7 @@ upload_dir.mkdir(exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=str(upload_dir)), name="uploads")
 
 # Include API Routers under /api
+app.include_router(auth.router, prefix=settings.API_PREFIX)
 app.include_router(animals.router, prefix=settings.API_PREFIX)
 app.include_router(analysis.router, prefix=settings.API_PREFIX)
 app.include_router(alerts.router, prefix=settings.API_PREFIX)
@@ -35,6 +36,7 @@ app.include_router(reports.router, prefix=settings.API_PREFIX)
 app.include_router(agents.router, prefix=settings.API_PREFIX)
 app.include_router(dashboard.router, prefix=settings.API_PREFIX)
 app.include_router(demo.router, prefix=settings.API_PREFIX)
+
 
 @app.get("/")
 def root():
